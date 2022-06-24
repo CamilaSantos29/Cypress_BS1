@@ -1,0 +1,10 @@
+{
+    
+  "chromeWebSecurity": false,
+
+  "env": {
+      "url": "https://automationpractice.com/index.php"
+  }
+  
+  
+}
