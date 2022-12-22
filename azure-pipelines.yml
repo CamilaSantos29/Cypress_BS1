@@ -1,0 +1,46 @@
+trigger:
+- main
+
+pool:
+  vmImage: windows-latest
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '12.x'
+  displayName: 'Install Node.js'
+
+- script: |
+      npm ci
+  displayName: 'Install project dependencies'
+- script: |
+      npm run cypress:verify
+  displayName: 'Verify if Cypress can be executed'
+- script: |
+      npm run cypress:run
+  displayName: 'Executed test Cypress'
+- task: PublishTestResults@2
+  displayName: 'Publish the test reports'
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '*.xml'
+    searchFolder: '$(System.DefaultWorkingDirectory)/cypress/results/'
+  condition: succeededOrFailed()
+  continueOnError: true
+
+- task: EmailReport@1
+  inputs:
+    sendMailConditionConfig: 'Always'
+    subject: '[{environmentStatus}] {passPercentage} tests passed in $(EnvironmentName) stage for $(Build.BuildNumber)'
+    toAddress: 'camila.santos@valtech.com'
+    ccAddress: 'camila_qaanalyst@hotmail.com'
+    defaultDomain: 'microsoft.com'
+    groupTestResultsBy: 'run'
+    includeCommits: true
+    maxTestFailuresToShow: '15'
+    includeOthersInTotal: false
+    usePreviousEnvironment: false
+    enableTLS: true
+    smtpConnectionEndpoint: 'testazuredevops'
+  condition: succeededOrFailed()
+  continueOnError: true
